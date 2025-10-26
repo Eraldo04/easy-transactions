@@ -1,0 +1,53 @@
+import { LogOut } from "lucide-react";
+import NavLink from "./NavLink";
+import { Link } from "react-router-dom";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { useContext } from "react";
+import { UserContext } from "@/components/Context";
+
+export interface UserType {
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+}
+
+const Sidebar = () => {
+  const { user, logout } = useContext(UserContext);
+
+  return (
+    <div className="h-full w-[250px] bg-zinc-200/50 border-r border-input flex flex-row flex-none">
+      <div className="w-full flex flex-col overflow-hidden">
+        <Link
+          to="/"
+          className="px-4 h-[59px] flex-none flex items-center justify-start gap-1 relative"
+        ></Link>
+        <NavLink to="/" className="bg-[#F36E22]">
+          Paneli qendror
+        </NavLink>
+
+        <div className="flex-1 flex flex-col justify-end px-2 pb-4">
+          <Button
+            variant="ghost"
+            className="w-full flex justify-between px-4 py-2 h-auto gap-2 text-red-700 hover:text-red-700"
+            onClick={logout}
+          >
+            <span className="flex flex-row items-center justify-start gap-1">
+              <LogOut size={16} />
+              Dil
+            </span>
+            <Avatar className="w-[26px]  h-[26px] bg-[#F36E22] border border-[#F36E22]">
+              <AvatarFallback className="bg-transparent text-[primary]-foreground text-xs -mt-[0.5px]">
+                {user?.firstName?.charAt(0) ?? ""}
+                {user?.lastName?.charAt(0) ?? ""}
+              </AvatarFallback>
+            </Avatar>
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Sidebar;
