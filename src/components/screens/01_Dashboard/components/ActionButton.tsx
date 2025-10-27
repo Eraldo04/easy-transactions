@@ -1,4 +1,4 @@
-import { MoreHorizontal, ReceiptTextIcon, ShieldBan } from "lucide-react";
+import { MoreHorizontal, ReceiptTextIcon, ShieldBan, Trash2Icon } from "lucide-react";
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -27,37 +27,9 @@ const ActionButton: React.FC<ActionButtonProps> = ({
   id,
   transaction_type,
 }) => {
-  const [isRemoveProductDialogOpen, setIsRemoveProductDialogOpen] =
+  const [isRemoveTransactionDialogOpen, setIsRemoveTransactionDialogOpen] =
     useState(false);
   const { t } = useTranslation();
-  // const [guarantorIdSelected, setGuarantorIdSelected] = useState("");
-
-  //   const [deleteGuarantor] = useMutation(DELETE_GUARANTOR);
-
-  //   const handleDeleteGuarantor = () => {
-  //     deleteGuarantor({
-  //       variables: {
-  //         guarantor_id: guarantorIdSelected,
-  //       },
-  //       refetchQueries: [GET_ALL_GUARANTORS],
-  //     })
-  //       .then(() => {
-  //         setIsRemoveProductDialogOpen(false);
-  //         setGuarantorIdSelected("");
-  //         toast({
-  //           variant: "default",
-  //           title: `Garantori u fshi me sukses.`,
-  //           description: "Të dhënat u ndryshuan me sukses.",
-  //         });
-  //       })
-  //       .catch(() =>
-  //       toast({
-  //         variant: "destructive",
-  //         title: "Gabim",
-  //         description:
-  //           "Operacioni nuk u krye me sukses. Ju lutemi të provoni përsëri.",
-  //       }));
-  //   };
 
   return (
     <>
@@ -86,19 +58,18 @@ const ActionButton: React.FC<ActionButtonProps> = ({
               <span>{t("Go to profile")}</span>
             </Link>
           </DropdownMenuItem>
-          {/* <DropdownMenuItem
-              className="bg-red-100 hover:!bg-red-200 flex items-center gap-1 !text-red-700 cursor-pointer"
-              onClick={() => {
-                setIsRemoveProductDialogOpen(true);
-                setGuarantorIdSelected(bank_id);
-              }}
-            >
-              <Trash2 size={16} strokeWidth={1.5} />
-              <span>Fshij {bank_name}</span>
-            </DropdownMenuItem> */}
+          <DropdownMenuItem
+            className="bg-red-100 hover:bg-red-200 flex items-center gap-1 text-red-700 cursor-pointer"
+            onClick={() => {
+              setIsRemoveTransactionDialogOpen(true);
+            }}
+          >
+            <Trash2Icon size={16} strokeWidth={1.5} />
+            <span>{t("Delete transaction")}</span>
+          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
-      <AlertDialog open={isRemoveProductDialogOpen}>
+      <AlertDialog open={isRemoveTransactionDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>{t("Are you sure?")}</AlertDialogTitle>
@@ -108,7 +79,7 @@ const ActionButton: React.FC<ActionButtonProps> = ({
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel
-              onClick={() => setIsRemoveProductDialogOpen(false)}
+              onClick={() => setIsRemoveTransactionDialogOpen(false)}
             >
               {t("Cancel")}
             </AlertDialogCancel>

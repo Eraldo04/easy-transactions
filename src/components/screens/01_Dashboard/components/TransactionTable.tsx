@@ -35,6 +35,7 @@ const TransactionTable: React.FC<TransactionTableProps> = ({
   const headers = [
     "date",
     "amount",
+    "amountEuro",
     "type",
     "category",
     "description",
@@ -73,21 +74,15 @@ const TransactionTable: React.FC<TransactionTableProps> = ({
               >
                 <DropdownMenuRadioItem
                   value="ASCENDING"
-                  className="gap-1 cursor-pointer"
+                  className="gap-1 cursor-pointer hover:bg-[#F36E22]-200"
                 >
-                  <span>{t("Descending")}</span>
+                  <span className="text-[#F36E22]">{t("Ascending")}</span>
                 </DropdownMenuRadioItem>
                 <DropdownMenuRadioItem
                   value="DESCENDING"
-                  className="gap-1 cursor-pointer hover:bg-[#F36E22]-200"
-                >
-                  <span className="text-[#F36E22]">{t("ACTIVE")}</span>
-                </DropdownMenuRadioItem>
-                <DropdownMenuRadioItem
-                  value="PASSIVE"
                   className="gap-1 cursor-pointer hover:bg-amber-200"
                 >
-                  <span className="text-amber-700">{t("INACTIVE")}</span>
+                  <span className="text-black-700">{t("Descending")}</span>
                 </DropdownMenuRadioItem>
               </DropdownMenuRadioGroup>
             </DropdownMenuContent>
@@ -130,6 +125,14 @@ const TransactionTable: React.FC<TransactionTableProps> = ({
                 >
                   {header === "date" ? (
                     <span>{format(transaction[header], "dd.MM.yyyy")}</span>
+                  ) : header === "description" ? (
+                    <span className="block max-w-48 overflow-hidden truncate">
+                      {transaction[header as keyof TransactionType] as string}
+                    </span>
+                  ) : header === "amount" ? (
+                    <span>{`${transaction[header]} ${transaction["currency"]}`}</span>
+                  ) : header === "amountEuro" ? (
+                    <span>{`${transaction[header]} €`}</span>
                   ) : (
                     t(`${transaction[header as keyof TransactionType]}`)
                   )}

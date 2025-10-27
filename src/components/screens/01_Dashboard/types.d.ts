@@ -2,6 +2,7 @@ interface TransactionType {
   description: string;
   date: string;
   amount: number;
+  amountEuro: number;
   type: "income" | "expense";
   category: string;
   currency: string;

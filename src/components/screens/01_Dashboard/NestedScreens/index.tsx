@@ -35,12 +35,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
-import { CalendarIcon } from "lucide-react";
+import { BanknoteArrowUpIcon, CalendarIcon } from "lucide-react";
 
 import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import z from "zod";
+import type { CategoryTypes } from "../../03_Categories/types";
 
 const formSchema = z.object({
   description: z.string().max(50, "Ju lutem vendosni email"),
@@ -58,6 +59,7 @@ const AddTransactionModal = () => {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [open, setOpen] = useState(false);
+  const categoryData = JSON.parse(localStorage.getItem("categories") || "[]");
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -70,31 +72,57 @@ const AddTransactionModal = () => {
     },
     mode: "onChange",
   });
-  
+
+  async function fetchEurRate(currency: string): Promise<number | null> {
+    const cur = currency?.toUpperCase();
+    if (!cur || cur === "EUR") return 1;
+    try {
+      const res = await fetch(
+        `https://api.frankfurter.app/latest?from=EUR&to=${currency}`
+      );
+      const json = await res.json();
+      const rate = json?.rates?.[cur];
+      return typeof rate === "number" ? rate : null;
+    } catch {
+      return null;
+    }
+  }
 
   async function onSubmit(data: FormValues) {
     const currentTransactions = JSON.parse(
       localStorage.getItem("transactionsData") || "[]"
     );
+    const amount = Number(data.amount);
+
+    const eurRate = await fetchEurRate(data.currency);
+    const amountEuro =
+      eurRate == null
+        ? null
+        : data.currency.toUpperCase() === "EUR"
+        ? amount
+        : (amount / eurRate).toFixed(2);
 
     const updatedTransactions = [
       ...currentTransactions,
       {
-        id: Math.random().toString(36).substr(2, 9),
-        date: data?.date,
-        amount: data.amount,
+        id: Math.random().toString(36).slice(2, 11),
+        date: data.date,
+        amount,
+        amountEuro,
         type: data.type,
         currency: data.currency,
         category: data.category,
         description: data.description,
       },
     ];
+
     localStorage.setItem(
       "transactionsData",
-      updatedTransactions && JSON.stringify(updatedTransactions)
+      JSON.stringify(updatedTransactions)
     );
-    console.log(updatedTransactions,'updatedTransactions');
+
     form.reset();
+    window.location.reload();
   }
 
   const {
@@ -126,7 +154,9 @@ const AddTransactionModal = () => {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button variant="secondary">{t("Add transaction")}</Button>
+        <Button variant="secondary" className="gap-1">
+          <BanknoteArrowUpIcon className="w-4 h-4" /> {t("Add transaction")}
+        </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
@@ -220,7 +250,7 @@ const AddTransactionModal = () => {
                     <FieldLegend>{t("Model")}</FieldLegend>
                     <Field>
                       <Controller
-                        name="currency"
+                        name="type"
                         control={control}
                         render={({ field }) => (
                           <Select
@@ -260,8 +290,8 @@ const AddTransactionModal = () => {
                         control={control}
                         render={({ field }) => (
                           <Select
-                            value={field.value}
-                            onValueChange={(val) => field.onChange(val)}
+                            value={field.value ?? ""}
+                            onValueChange={field.onChange}
                             disabled={isLoading || !!error}
                           >
                             <SelectTrigger className="bg-gray-100 border-gray-300">
@@ -273,11 +303,52 @@ const AddTransactionModal = () => {
                                   {t("Gabim gjatë marrjes së monedhave")}
                                 </div>
                               ) : (
-                                currencies.map((c) => (
-                                  <SelectItem key={c} value={c}>
-                                    {c}
+                                currencies.map((currency) => (
+                                  <SelectItem key={currency} value={currency}>
+                                    {currency}
                                   </SelectItem>
                                 ))
+                              )}
+                            </SelectContent>
+                          </Select>
+                        )}
+                      />
+                      {errors.currency && (
+                        <p className="mt-1 text-xs text-red-600">
+                          {errors.currency.message}
+                        </p>
+                      )}
+                    </Field>
+                  </FieldGroup>
+                </FieldSet>
+                <FieldSet>
+                  <FieldGroup className="gap-0.5">
+                    <FieldLegend>{t("Category")}</FieldLegend>
+                    <Field>
+                      <Controller
+                        name="category"
+                        control={control}
+                        render={({ field }) => (
+                          <Select
+                            value={field.value}
+                            onValueChange={(val) => field.onChange(val)}
+                            disabled={isLoading || !!error}
+                          >
+                            <SelectTrigger className="bg-gray-100 border-gray-300">
+                              <SelectValue placeholder={t("Choose Category")} />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {categoryData?.map(
+                                (categoryData: CategoryTypes) => {
+                                  return (
+                                    <SelectItem
+                                      key={categoryData.id}
+                                      value={categoryData.category}
+                                    >
+                                      {categoryData.category}
+                                    </SelectItem>
+                                  );
+                                }
                               )}
                             </SelectContent>
                           </Select>
@@ -294,37 +365,21 @@ const AddTransactionModal = () => {
 
                 <FieldSet>
                   <FieldGroup className="gap-0.5">
-                    <FieldLegend>Kategoria</FieldLegend>
-                    <Field>
-                      <Input
-                        type="text"
-                        placeholder="123456"
-                        autoComplete="category"
-                        aria-invalid={!!errors.category}
-                        {...register("category")}
-                      />
-                      {errors.category && (
-                        <p className="text-xs text-red-600 mt-1">
-                          {errors.category.message}
-                        </p>
-                      )}
-                    </Field>
-                  </FieldGroup>
-                </FieldSet>
-                <FieldSet>
-                  <FieldGroup className="gap-0.5">
                     <FieldLegend>Përshkrimi</FieldLegend>
                     <Field>
                       <Textarea
-                        autoComplete="description"
+                        {...register("description")}
+                        autoComplete="off"
                         className="bg-gray-100 border-gray-300 resize-none"
                         placeholder={t(
                           "You can provide a short description here"
                         )}
                         aria-invalid={!!errors.description}
+                        maxLength={50}
+                        rows={3}
                       />
                       {errors.description && (
-                        <p className="text-xs text-red-600 mt-1">
+                        <p className="mt-1 text-xs text-red-600">
                           {errors.description.message}
                         </p>
                       )}

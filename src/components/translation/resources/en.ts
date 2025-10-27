@@ -9,4 +9,5 @@ export default {
   category: "Category",
   description: "Description",
   currency: "Currency",
+    "amountEuro": "Amount in Euro"
 };

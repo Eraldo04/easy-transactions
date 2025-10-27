@@ -1,11 +1,7 @@
 import { cn } from "@/lib/utils";
-import { LayoutDashboardIcon, UsersIcon } from "lucide-react";
+import { BookAudioIcon, LayoutDashboardIcon } from "lucide-react";
 import React, { useMemo } from "react";
-import {
-  NavLink as RRDNavlink,
-  useLocation,
-  type NavLinkProps,
-} from "react-router-dom";
+import { NavLink, useLocation, type NavLinkProps } from "react-router-dom";
 
 const NavLinkComponent: React.FC<NavLinkProps> = ({ children, to }) => {
   const icon = useMemo(() => {
@@ -13,8 +9,8 @@ const NavLinkComponent: React.FC<NavLinkProps> = ({ children, to }) => {
       return (
         <LayoutDashboardIcon className="flex-none -ml-[0.5px]" size={16} />
       );
-    if (to.toString().startsWith("/users-example"))
-      return <UsersIcon className="flex-none -ml-[0.5px]" size={16} />;
+    if (to.toString().startsWith("/categories"))
+      return <BookAudioIcon className="flex-none -ml-[0.5px]" size={16} />;
   }, [to]);
 
   const location = useLocation();
@@ -45,7 +41,7 @@ const NavLinkComponent: React.FC<NavLinkProps> = ({ children, to }) => {
   }, [location.pathname, to]);
 
   return (
-    <RRDNavlink to={to}>
+    <NavLink to={to}>
       {typeof children !== "function" ? (
         <div className="group py-1 px-2">
           <div
@@ -67,7 +63,7 @@ const NavLinkComponent: React.FC<NavLinkProps> = ({ children, to }) => {
       ) : (
         children
       )}
-    </RRDNavlink>
+    </NavLink>
   );
 };
 
