@@ -1,5 +1,7 @@
 # React + TypeScript + Vite
 
+YOU CAN PLACE ANY LOGIN DETAILS AND IT WILL LOGIN BECAUSE IT IS JUST AN IDEA OF THE LOGIN CONFIGURATION
+
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
 Currently, two official plugins are available:
