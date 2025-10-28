@@ -37,11 +37,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
 import { BanknoteArrowUpIcon, CalendarIcon } from "lucide-react";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import z from "zod";
 import type { CategoryTypes } from "../../03_Categories/types";
+import { fetchEurRate } from "@/components/libs/fetchEurRate";
+import useFetchCurrencies from "@/components/libs/fetchCurrencies";
 
 const formSchema = z.object({
   description: z.string().max(50, "Ju lutem vendosni email"),
@@ -51,15 +53,13 @@ const formSchema = z.object({
   currency: z.string().max(50, "Ju lutem vendosni monedhën"),
   date: z.string().max(50, "Ju lutem vendosni datën"),
 });
-type FormValues = z.infer<typeof formSchema>;
+export type FormValues = z.infer<typeof formSchema>;
 
 const AddTransactionModal = () => {
   const { t } = useTranslation();
-  const [currencies, setCurrencies] = useState<string[]>([]);
-  const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [open, setOpen] = useState(false);
   const categoryData = JSON.parse(localStorage.getItem("categories") || "[]");
+  const currenciesData = useFetchCurrencies();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -72,21 +72,6 @@ const AddTransactionModal = () => {
     },
     mode: "onChange",
   });
-
-  async function fetchEurRate(currency: string): Promise<number | null> {
-    const cur = currency?.toUpperCase();
-    if (!cur || cur === "EUR") return 1;
-    try {
-      const res = await fetch(
-        `https://api.frankfurter.app/latest?from=EUR&to=${currency}`
-      );
-      const json = await res.json();
-      const rate = json?.rates?.[cur];
-      return typeof rate === "number" ? rate : null;
-    } catch {
-      return null;
-    }
-  }
 
   async function onSubmit(data: FormValues) {
     const currentTransactions = JSON.parse(
@@ -132,30 +117,14 @@ const AddTransactionModal = () => {
     formState: { errors, isValid, isSubmitting },
   } = form;
 
-  useEffect(() => {
-    const fetchData = async () => {
-      setIsLoading(true);
-      try {
-        const response = await fetch(
-          "https://api.exchangerate-api.com/v4/latest/ALL"
-        );
-        const result = await response.json();
-        const currencyCodes = Object.keys(result.rates);
-        setCurrencies(currencyCodes);
-      } catch (err: any) {
-        setError(err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchData();
-  }, []);
-
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button variant="secondary" className="gap-1">
-          <BanknoteArrowUpIcon className="w-4 h-4" /> {t("Add transaction")}
+        <Button
+          variant="secondary"
+          className="gap-2 w-full p-2 flex flex-row items-center justify-between"
+        >
+          <BanknoteArrowUpIcon className="w-4 h-4" /> {t("Add new")}
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
@@ -247,7 +216,7 @@ const AddTransactionModal = () => {
 
                 <FieldSet>
                   <FieldGroup className="gap-0.5">
-                    <FieldLegend>{t("Model")}</FieldLegend>
+                    <FieldLegend>{t("Type")}</FieldLegend>
                     <Field>
                       <Controller
                         name="type"
@@ -256,10 +225,12 @@ const AddTransactionModal = () => {
                           <Select
                             value={field.value}
                             onValueChange={(val) => field.onChange(val)}
-                            disabled={isLoading || !!error}
+                            disabled={
+                              currenciesData.isLoading || !!currenciesData.error
+                            }
                           >
                             <SelectTrigger className="bg-gray-100 border-gray-300">
-                              <SelectValue placeholder={t("Choose model")} />
+                              <SelectValue placeholder={t("Select model")} />
                             </SelectTrigger>
                             <SelectContent>
                               <SelectItem value="INCOME">
@@ -292,18 +263,18 @@ const AddTransactionModal = () => {
                           <Select
                             value={field.value ?? ""}
                             onValueChange={field.onChange}
-                            disabled={isLoading || !!error}
+                            disabled={currenciesData.isLoading || !!currenciesData.error}
                           >
                             <SelectTrigger className="bg-gray-100 border-gray-300">
-                              <SelectValue placeholder={t("Choose currency")} />
+                              <SelectValue placeholder={t("Select currency")} />
                             </SelectTrigger>
                             <SelectContent>
-                              {error ? (
+                              {currenciesData.error ? (
                                 <div className="px-2 py-1.5 text-sm text-red-600">
                                   {t("Gabim gjatë marrjes së monedhave")}
                                 </div>
                               ) : (
-                                currencies.map((currency) => (
+                                currenciesData.currencies.map((currency) => (
                                   <SelectItem key={currency} value={currency}>
                                     {currency}
                                   </SelectItem>
@@ -332,10 +303,10 @@ const AddTransactionModal = () => {
                           <Select
                             value={field.value}
                             onValueChange={(val) => field.onChange(val)}
-                            disabled={isLoading || !!error}
+                            disabled={currenciesData.isLoading || !!currenciesData.error}
                           >
                             <SelectTrigger className="bg-gray-100 border-gray-300">
-                              <SelectValue placeholder={t("Choose Category")} />
+                              <SelectValue placeholder={t("Select category")} />
                             </SelectTrigger>
                             <SelectContent>
                               {categoryData?.map(
@@ -365,7 +336,7 @@ const AddTransactionModal = () => {
 
                 <FieldSet>
                   <FieldGroup className="gap-0.5">
-                    <FieldLegend>Përshkrimi</FieldLegend>
+                    <FieldLegend>{t("Description")}</FieldLegend>
                     <Field>
                       <Textarea
                         {...register("description")}

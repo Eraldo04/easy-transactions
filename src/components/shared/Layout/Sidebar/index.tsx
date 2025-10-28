@@ -1,7 +1,6 @@
 import { LogOut } from "lucide-react";
 import NavLink from "./NavLink";
 import { Link } from "react-router-dom";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { useContext } from "react";
 import { UserContext } from "@/components/Context";
@@ -16,7 +15,7 @@ export interface UserType {
 }
 
 const Sidebar = () => {
-  const { user, logout } = useContext(UserContext);
+  const { logout } = useContext(UserContext);
   const { t } = useTranslation();
   return (
     <div className="h-full w-[250px] bg-zinc-200/50 border-r border-input flex flex-row flex-none">
@@ -25,7 +24,7 @@ const Sidebar = () => {
           to="/"
           className="px-4 h-[59px] w-full bg-[#F36E22] flex-none flex items-center justify-start gap-1 relative"
         >
-          <img  src={logoImage} />
+          <img src={logoImage} />
         </Link>
         <NavLink to="/" className="bg-[#F36E22]">
           {t("Dashboard")}
@@ -42,14 +41,8 @@ const Sidebar = () => {
           >
             <span className="flex flex-row items-center justify-start gap-1">
               <LogOut size={16} />
-              Dil
+              {t("Sign out")}
             </span>
-            <Avatar className="w-[26px]  h-[26px] bg-[#F36E22] border border-[#F36E22]">
-              <AvatarFallback className="bg-transparent text-[primary]-foreground text-xs -mt-[0.5px]">
-                {user?.firstName?.charAt(0) ?? ""}
-                {user?.lastName?.charAt(0) ?? ""}
-              </AvatarFallback>
-            </Avatar>
           </Button>
         </div>
       </div>

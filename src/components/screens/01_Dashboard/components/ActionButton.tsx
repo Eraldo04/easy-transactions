@@ -1,4 +1,9 @@
-import { MoreHorizontal, ReceiptTextIcon, ShieldBan, Trash2Icon } from "lucide-react";
+import {
+  MoreHorizontal,
+  ReceiptTextIcon,
+  ShieldBan,
+  Trash2Icon,
+} from "lucide-react";
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -22,14 +27,33 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { toast } from "sonner";
 
 const ActionButton: React.FC<ActionButtonProps> = ({
   id,
   transaction_type,
+  data,
 }) => {
   const [isRemoveTransactionDialogOpen, setIsRemoveTransactionDialogOpen] =
     useState(false);
   const { t } = useTranslation();
+
+  function deleteItemById(id: string) {
+    const index = data && data.findIndex((item) => item.id === id);
+    try {
+      if (data && index) {
+        data.splice(index, 1);
+      }
+      localStorage.setItem("transactionsData", JSON.stringify(data));
+      toast("Transaction is deleted successfully.");
+      window.location.reload();
+    } catch {
+      if (index === -1) {
+        console.warn(`No item found with id "${id}".`);
+        return;
+      }
+    }
+  }
 
   return (
     <>
@@ -85,11 +109,11 @@ const ActionButton: React.FC<ActionButtonProps> = ({
             </AlertDialogCancel>
             <AlertDialogAction
               className="bg-red-500 hover:bg-red-600 flex items-center gap-1"
-              // onClick={() => handleDeleteGuarantor()}
+              onClick={() => deleteItemById(id)}
             >
               <ShieldBan size={16} strokeWidth={3} />
               <span>
-                {t("Delete")} {transaction_type}
+                {t("Delete")} {t(transaction_type)}
               </span>
             </AlertDialogAction>
           </AlertDialogFooter>
